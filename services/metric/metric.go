@@ -3,7 +3,7 @@ package metric
 import (
 	"fmt"
 
-	"github.com/skos-ninja/prometheus-rancher-discovery/services/rancher"
+	"discovery/services/rancher"
 )
 
 // Metric is the format that prometheus is expecting json data to be in for <file_sd_config>
