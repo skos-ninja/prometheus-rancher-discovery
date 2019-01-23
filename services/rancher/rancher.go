@@ -8,8 +8,6 @@ import (
 	"net/url"
 	pathlib "path"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 // Client is a rancher json client
@@ -51,20 +49,22 @@ func NewClient(baseURL *string, c *http.Client) *Client {
 	}
 }
 
-func (c *Client) createRequest(method string, path string) *http.Request {
-	return &http.Request{
-		Method: method,
-		URL: &url.URL{
-			Scheme: c.Scheme,
-			Host:   c.Host,
-			Path:   pathlib.Join(c.Prefix, path),
-		},
-		Header: http.Header{
-			"Accept":     []string{"application/json"},
-			"User-Agent": []string{c.UserAgent},
-		},
-		Host: c.Host,
+func (c *Client) createRequest(method string, path string) (*http.Request, error) {
+	url := &url.URL{
+		Scheme: c.Scheme,
+		Host:   c.Host,
+		Path:   pathlib.Join(c.Prefix, path),
 	}
+
+	req, err := http.NewRequest(method, url.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", defaultUserAgent)
+
+	return req, nil
 }
 
 // GetContainers implements the 2015-12-19/containers method with minimal output properties
@@ -73,15 +73,17 @@ func (c *Client) GetContainers(ctx context.Context) ([]Container, error) {
 		ctx = context.Background()
 	}
 
-	req := c.createRequest("GET", "2015-12-19/containers")
-
-	pretty.Print(c)
-	pretty.Print(req)
+	req, err := c.createRequest("GET", "2015-12-19/containers")
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
+
+	defer res.Body.Close()
 
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
@@ -89,8 +91,8 @@ func (c *Client) GetContainers(ctx context.Context) ([]Container, error) {
 	}
 
 	var containers []Container
-	jsonErr := json.Unmarshal(body, &containers)
-	if jsonErr != nil {
+	err = json.Unmarshal(body, &containers)
+	if err != nil {
 		return nil, err
 	}
 

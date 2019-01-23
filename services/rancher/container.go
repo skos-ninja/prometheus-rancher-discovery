@@ -9,7 +9,7 @@ type Container struct {
 
 	ServiceName    string `json:"service_name"`
 	ServiceID      string `json:"service_uuid"`
-	ServiceReplica int    `json:"service_index"`
+	ServiceReplica string `json:"service_index"`
 
 	StackName string `json:"stack_name"`
 	StackID   string `json:"stack_uuid"`
