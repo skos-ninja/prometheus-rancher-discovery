@@ -33,6 +33,17 @@ func (c *Container) GetLabel(label string) *string {
 	return nil
 }
 
+// GetLabelOrDefault will return the string value or default value of the label based off of the prefix plus the label
+func (c *Container) GetLabelOrDefault(label string, defaultValue string) string {
+	labelName := generateLabelName(label)
+
+	if i, ok := c.Labels[labelName]; ok {
+		return i
+	}
+
+	return defaultValue
+}
+
 func generateLabelName(label string) string {
 	return fmt.Sprintf("ninja.skos.prometheus.rancher.%s", label)
 }
