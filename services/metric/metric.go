@@ -12,6 +12,8 @@ type Metric struct {
 	Labels  map[string]string `json:"labels"`
 }
 
+const pathLabelKey = "__metrics_path__"
+
 // ConvertServiceStackToMetrics awd
 func ConvertServiceStackToMetrics(serviceStack *map[string]map[string][]rancher.Container) ([]Metric, error) {
 	metrics := []Metric{}
@@ -22,8 +24,8 @@ func ConvertServiceStackToMetrics(serviceStack *map[string]map[string][]rancher.
 			metric := Metric{
 				Targets: []string{},
 				Labels: map[string]string{
-					"env":     stackName,
-					"service": serviceName,
+					"env": stackName,
+					"job": serviceName,
 				},
 			}
 
@@ -34,12 +36,12 @@ func ConvertServiceStackToMetrics(serviceStack *map[string]map[string][]rancher.
 
 				// Set metric path from container label
 				pathLabel := service.GetLabelOrDefault("path", "/system/metrics")
-				if _, ok := metric.Labels["metrics_path"]; ok {
-					if metric.Labels["metrics_path"] != pathLabel {
+				if _, ok := metric.Labels[pathLabelKey]; ok {
+					if metric.Labels[pathLabelKey] != pathLabel {
 						return nil, fmt.Errorf("Differing metric paths: %s", serviceName)
 					}
 				}
-				metric.Labels["metrics_path"] = service.GetLabelOrDefault("path", "/system/metrics")
+				metric.Labels[pathLabelKey] = service.GetLabelOrDefault("path", "/system/metrics")
 
 				metric.Targets = append(metric.Targets, target)
 			}
