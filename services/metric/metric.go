@@ -56,6 +56,6 @@ func ConvertServiceStackToMetrics(serviceStack *map[string]map[string][]rancher.
 func getTargetFromContainer(container rancher.Container) string {
 	port := container.GetLabelOrDefault("port", "80")
 
-	// We prefer the container name here rather than the
+	// We prefer the container name here rather than the IP
 	return fmt.Sprintf("%s:%s", container.Name, port)
 }
